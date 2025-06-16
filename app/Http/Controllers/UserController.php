@@ -10,36 +10,38 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-    public function store(Request $request){
-        
+    public function store(Request $request)
+    {
+
         $reCaptchToken = $request->input('recaptcha_token');
 
-        $googleResponse = Http::asform()->post('https://www.google.com/recaptcha/api/siteverify' , [
-            'secret' => env('RECAPTCHA_SECRET_KEY') ,
-            'response' => $reCaptchToken ,
+        $googleResponse = Http::asform()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => env('RECAPTCHA_SECRET_KEY'),
+            'response' => $reCaptchToken,
             'remoteip' => $request->ip()
         ]);
 
         $googleResponseData = $googleResponse->json();
-        
 
-        if(!$googleResponseData['success'] || $googleResponseData['score'] < 0.5 || $googleResponseData['action'] != 'register' )
+
+
+        if (!$googleResponseData['success'] || $googleResponseData['score'] < 0.5 || $googleResponseData['action'] != 'register')
         {
-             return response()->json(['error' =>'reCAPTCHA verification failed.'] , 422);
+            return response()->json(['error' => 'reCAPTCHA verification failed.'], 422);
         }
 
-        $validator  = Validator::make($request->all() , [
-            'email' => 'email | required' , 
-            'password' => 'required|min:6' , 
-            'confirm' => 'required|same:password' , 
-            'name' => 'required'    
+        $validator = Validator::make($request->all(), [
+            'email' => 'email | required',
+            'password' => 'required|min:6',
+            'confirm' => 'required|same:password',
+            'name' => 'required'
         ]);
 
-        if($validator->fails())
+        if ($validator->fails())
         {
             return response()->json([
                 'error' => $validator->errors()
-            ] , 403);
+            ], 403);
         }
 
         $data = $request->all();
@@ -48,20 +50,82 @@ class UserController extends Controller
 
         $user = User::create([
             'name' => $data['name'],
-            'email' => $data['email'] , 
-            'password' => $data['password'] ,
+            'email' => $data['email'],
+            'password' => $data['password'],
         ]);
 
-        if(!$user)
+        if (!$user)
         {
-            return response()->json(['error' => 'user creation failde'] , 500);
+            return response()->json(['error' => 'user creation failde'], 500);
         }
 
         $token = $user->createToken('auth_toke')->plainTextToken;
 
         return response()->json([
-            'token'  => $token , 
+            'token' => $token,
             'message' => 'User created SuccesFully'
-        ] , 200);
+        ], 200);
     }
+
+
+    public function profile()
+    {
+
+    }
+
+
+    public function authenticate(Request $request)
+    {
+        $reCaptchToken = $request->input('recaptcha_token');
+
+        $googleResponse = Http::asform()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => env('RECAPTCHA_SECRET_KEY'),
+            'response' => $reCaptchToken,
+            'remoteip' => $request->ip()
+        ]);
+
+        $googleResponseData = $googleResponse->json();
+
+
+        if (!$googleResponseData['success'] || $googleResponseData['score'] < 0.5 || $googleResponseData['action'] != 'login')
+        {
+            return response()->json(['error' => 'reCAPTCHA verification failed.'], 422);
+        }
+
+
+        $validator = Validator::make($request->all(), [
+            'email' => 'required | email',
+            'password' => 'required',
+            'recaptcha_token' => 'required'
+        ]);
+
+        if ($validator->fails())
+        {
+            return response()->json([
+                'error' => $validator->errors()
+            ], 403);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user)
+        {
+            return response()->json(['error' => 'User not found'], 403);
+        }
+
+        if (!Hash::check($request->input('password'), $user->password))
+        {
+            return response()->json(['error' => 'User not found'], 403);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+        return response()->json([
+            'token' => $token,
+            'user' => $user
+        ]);
+
+    }
+
+
+
+
 }
