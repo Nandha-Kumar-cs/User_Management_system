@@ -1,5 +1,7 @@
 @extends('layout')
+
 @section('title', 'Login')
+
 @section('main_container')
     <div class="login_container d-flex justify-content-center ">
         <div class="card shadow p-4" style="width: 100%; max-width: 400px;">
@@ -16,7 +18,9 @@
                     <label for="password" class="form-label">Password</label>
                     <input type="password" class="form-control" id="password" name="password" required />
                 </div>
+
                 <input type="hidden" name="recaptcha_token" id="recaptcha-token">
+
                 <button type="submit" class="btn btn-primary w-100">Login</button>
             </form>
 
@@ -35,57 +39,40 @@
 @section('scripts')
     <script src="https://www.google.com/recaptcha/api.js?render=6LfXx2ArAAAAAFw9JczEdfdfaA-qd00V6_Nj7ZwJ"></script>
     <script>
-        // login-form submission
         $(document).ready(function () {
-
             $('#login-form').on('submit', function (e) {
                 e.preventDefault();
 
-                // generate the re-captcha token
-                new Promise((resolve, reject) => {
-                    grecaptcha.ready(function () {
-                        grecaptcha.execute('6LfXx2ArAAAAAFw9JczEdfdfaA-qd00V6_Nj7ZwJ', { action: 'login' })
-                            .then(function (token) {
-                                try {
-                                    if (!token || typeof token !== 'string') {
-                                        throw new Error('Invalid reCAPTCHA token');
-                                    }
+                grecaptcha.ready(function () {
+                    grecaptcha.execute('6LfXx2ArAAAAAFw9JczEdfdfaA-qd00V6_Nj7ZwJ', { action: 'login' })
+                        .then(function (token) {
+                            $('#recaptcha-token').val(token);
+                            const formData = new FormData($('#login-form'));
 
-                                    const tokenInput = document.getElementById('recaptcha-token');
-                                    if (!tokenInput) {
-                                        throw new Error('Missing hidden input with id="recaptcha-token"');
-                                    }
-                                    tokenInput.value = token;
-                                    resolve();
-                                } catch (err) {
-                                    console.error('Token processing error:', err);
-                                    reject();
-                                }
+                            fetch('{{ url("api/authenticate") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                                },
+                                body: formData
                             })
-                            .catch(function (err) {
-                                console.error('reCAPTCHA execute error:', err);
-                                reject();
-                            });
-                    });
-                });
-
-
-                var formData = new FormData(this);
-                fetch('api/authenticate', {
-                    method: 'POST',
-                    body: formData,
-                }).then(async response => {
-                    const result = await response;
-                    if (response.status.ok) {
-
-                    } else {
-
-                    }
+                                .then(response => response.json())
+                                .then(result => {
+                                    if (result.token) {
+                                        localStorage.setItem('auth_token' , token)
+                                        window.location.href = '/profile';
+                                    } else {
+                                        alert(result.error || 'Login failed.');
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error('Request failed:', err);
+                                    alert('Login error. Please try again.');
+                                });
+                        });
                 });
             });
         });
-
     </script>
-
-
 @endsection

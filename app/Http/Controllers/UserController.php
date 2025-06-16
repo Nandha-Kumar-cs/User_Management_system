@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\support\Facades\Auth;
 use Illuminate\support\facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -58,7 +59,7 @@ class UserController extends Controller
         {
             return response()->json(['error' => 'user creation failde'], 500);
         }
-
+        Auth::login($user);
         $token = $user->createToken('auth_toke')->plainTextToken;
 
         return response()->json([
@@ -68,10 +69,6 @@ class UserController extends Controller
     }
 
 
-    public function profile()
-    {
-
-    }
 
 
     public function authenticate(Request $request)
@@ -83,41 +80,33 @@ class UserController extends Controller
             'response' => $reCaptchToken,
             'remoteip' => $request->ip()
         ]);
-
         $googleResponseData = $googleResponse->json();
-
-
         if (!$googleResponseData['success'] || $googleResponseData['score'] < 0.5 || $googleResponseData['action'] != 'login')
         {
             return response()->json(['error' => 'reCAPTCHA verification failed.'], 422);
         }
-
-
         $validator = Validator::make($request->all(), [
             'email' => 'required | email',
             'password' => 'required',
             'recaptcha_token' => 'required'
         ]);
-
         if ($validator->fails())
         {
             return response()->json([
                 'error' => $validator->errors()
             ], 403);
         }
-
         $user = User::where('email', $request->email)->first();
         if (!$user)
         {
             return response()->json(['error' => 'User not found'], 403);
         }
-
         if (!Hash::check($request->input('password'), $user->password))
         {
             return response()->json(['error' => 'User not found'], 403);
         }
-
         $token = $user->createToken('auth_token')->plainTextToken;
+        Auth::login($user);
         return response()->json([
             'token' => $token,
             'user' => $user
