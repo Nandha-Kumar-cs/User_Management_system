@@ -64,8 +64,8 @@
                                 if (!tokenInput) {
                                     throw new Error('Missing hidden input with id="recaptcha-token"');
                                 }
-
                                 tokenInput.value = token;
+                                
                                 resolve();
                             } catch (err) {
                                 console.error('Token processing error:', err);
@@ -80,7 +80,7 @@
             });
 
             var formData = new FormData(this);
-            fetch('api/store', {
+            fetch('api/register', {
                 method: 'POST',
                 body: formData
             }).then(async response => {

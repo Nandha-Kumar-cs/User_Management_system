@@ -15,8 +15,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/store', [UserController::class, 'store'])->name('api.register');
-Route::post('/authenticate', [UserController::class, 'authenticate'])->name('api.authenticate');
+Route::post('/register', [UserController::class, 'store'])->name('api.register');
+Route::post('/login', [UserController::class, 'authenticate'])->name('api.authenticate');
 Route::middleware('auth:sanctum')->get('/profile', function (Request $request) {
     return $request->user();
 });

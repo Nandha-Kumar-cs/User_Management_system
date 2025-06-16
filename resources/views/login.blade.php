@@ -49,7 +49,7 @@
                             $('#recaptcha-token').val(token);
                             const formData = new FormData($('#login-form'));
 
-                            fetch('{{ url("api/authenticate") }}', {
+                            fetch('{{ url("api/login") }}', {
                                 method: 'POST',
                                 headers: {
                                     'Accept': 'application/json',
