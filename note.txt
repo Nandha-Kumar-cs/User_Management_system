@@ -1,0 +1,1 @@
+for pagination -> composer require yajra/laravel-datatables-oracle:"^10"

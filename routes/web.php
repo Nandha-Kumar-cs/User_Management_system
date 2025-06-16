@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
@@ -9,4 +10,5 @@ Route::get('/register', function () {
     return view('register');
 })->name('register');
 Route::view('/profile' , 'userProfile');
-Route::get('/admin' , []);
+Route::get('/adminData' , [Admin::class , 'getUsers'])->name('admin/userData');
+Route::view('/admin' ,'admin' );
