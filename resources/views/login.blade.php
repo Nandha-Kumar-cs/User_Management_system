@@ -5,7 +5,7 @@
 @section('main_container')
     <div class="login_container d-flex justify-content-center ">
         <div class="card shadow p-4" style="width: 100%; max-width: 400px;">
-            <h3 class="text-center mb-3">Login</h3>
+            <h3 class="text-center mb-3 login">Login</h3>
 
             <form id="login-form">
                 @csrf
@@ -47,7 +47,9 @@
                     grecaptcha.execute('6LfXx2ArAAAAAFw9JczEdfdfaA-qd00V6_Nj7ZwJ', { action: 'login' })
                         .then(function (token) {
                             $('#recaptcha-token').val(token);
-                            const formData = new FormData($('#login-form'));
+                            const formData = new FormData($('#login-form')[0]);
+                            // formData.append('email',$('#email'));
+                            // formData.append('password',$('#password'));
 
                             fetch('{{ url("api/authenticate") }}', {
                                 method: 'POST',
@@ -59,11 +61,19 @@
                             })
                                 .then(response => response.json())
                                 .then(result => {
+
                                     if (result.token) {
                                         localStorage.setItem('auth_token' , token)
                                         window.location.href = '/profile';
                                     } else {
-                                        alert(result.error || 'Login failed.');
+                                        let errors = result.error;
+
+                                            // console.log(field);
+                                            let input = $('#email, #password');
+                                            input.addClass('is-invalid');
+                                            $('#password').after(`<div class="invalid-feedback">${errors}</div>`);
+
+                                        // alert(result.error || 'Login failed.');
                                     }
                                 })
                                 .catch(err => {
