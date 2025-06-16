@@ -78,12 +78,19 @@
                 method: 'POST',
                 body: formData
             }).then(async response => {
+                const result = await response.json() ;
                 if (response.ok) {
-                  
+
                 }
                 else if(response.status != 200){
-                    result = await response ;
-                    console.log(response);
+                    let errors = result.error;
+                    // console.log(errors);
+                    for (let field in errors) {
+                        // console.log(field);
+                        let input = $(`[name="${field}"]`);
+                        input.addClass('is-invalid');
+                        input.after(`<div class="invalid-feedback">${errors[field][0]}</div>`);
+                    }
 
                  }
             }).catch(error => { alert(error); })
