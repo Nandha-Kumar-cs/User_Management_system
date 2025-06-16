@@ -1,10 +1,13 @@
 @extends('layout')
 @section('title', 'register')
+
 @section('main_container')
-    <div class="register_container d-flex justify-content-center ">
+    <div class="register_container d-flex justify-content-center">
         <div class="card shadow p-4" style="width: 100%; max-width: 450px;">
             <h3 class="text-center mb-3">Create Account</h3>
-            <form action="register.php" method="POST">
+
+            <form id="register-form">
+                @csrf
                 <div class="mb-3">
                     <label for="name" class="form-label">Full Name</label>
                     <input type="text" class="form-control" id="name" name="name" required />
@@ -21,14 +24,72 @@
                     <label for="confirm" class="form-label">Confirm Password</label>
                     <input type="password" class="form-control" id="confirm" name="confirm" required />
                 </div>
-                <div class="mb-3">
-                    <div class="g-recaptcha" data-sitekey=""></div>
-                </div>
-
+                <input type="hidden" name="recaptcha_token" id="recaptcha-token">
                 <button type="submit" class="btn btn-success w-100">Register</button>
             </form>
+
             <p class="text-center mt-3">
-                <small>Already have an account? <a href="login.html">Login</a></small>
+                <small>Already have an account? <a href="{{ route('login') }}">Login</a></small>
+            </p>
+            <p style="font-size: 12px;" class="text-muted text-center mt-3">
+                This site is protected by reCAPTCHA and the Google
+                <a href="https://policies.google.com/privacy" target="_blank">Privacy Policy</a> and
+                <a href="https://policies.google.com/terms" target="_blank">Terms of Service</a> apply.
             </p>
         </div>
+    </div>
+@endsection
+
+@section('scripts')
+    <script src="https://www.google.com/recaptcha/api.js?render=6LfXx2ArAAAAAFw9JczEdfdfaA-qd00V6_Nj7ZwJ"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            grecaptcha.ready(function () {
+                grecaptcha.execute('6LfXx2ArAAAAAFw9JczEdfdfaA-qd00V6_Nj7ZwJ', { action: 'register' })
+                    .then(function (token) {
+                        try {
+                            if (!token || typeof token !== 'string') {
+                                throw new Error('Invalid reCAPTCHA token');
+                            }
+
+                            const tokenInput = document.getElementById('recaptcha-token');
+                            if (!tokenInput) {
+                                throw new Error('Missing hidden input with id="recaptcha-token"');
+                            }
+
+                            tokenInput.value = token;
+                        } catch (err) {
+                            console.error('Token processing error:', err);
+                        }
+                    })
+                    .catch(function (err) {
+                        console.error('reCAPTCHA execute error:', err);
+                    });
+            });
+        });
+
+
+        // for registering the input
+
+        $('#register-form').on('submit', function (e) {
+            e.preventDefault(); // Prevent default form submission
+            var formData = new FormData(this);
+            fetch('api/store', {
+                method: 'POST',
+                body: formData
+            }).then(async response => {
+                if (response.ok) {
+                  
+                }
+                else if(response.status != 200){
+                    result = await response ;
+                    console.log(response);
+
+                 }
+            }).catch(error => { alert(error); })
+        });
+
+    </script>
+
+
 @endsection
