@@ -99,11 +99,11 @@ class UserController extends Controller
         $user = User::where('email', $request->email)->first();
         if (!$user)
         {
-            return response()->json(['error' => 'User not found'], 403);
+            return response()->json(['error' => 'Invalid Credentials'], 403);
         }
         if (!Hash::check($request->input('password'), $user->password))
         {
-            return response()->json(['error' => 'User not found'], 403);
+            return response()->json(['error' => 'Invalid Credentials'], 403);
         }
         $token = $user->createToken('auth_token')->plainTextToken;
         Auth::login($user);
