@@ -44,55 +44,59 @@
     <script src="https://www.google.com/recaptcha/api.js?render=6LfXx2ArAAAAAFw9JczEdfdfaA-qd00V6_Nj7ZwJ"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            grecaptcha.ready(function () {
-                grecaptcha.execute('6LfXx2ArAAAAAFw9JczEdfdfaA-qd00V6_Nj7ZwJ', { action: 'register' })
-                    .then(function (token) {
-                        try {
-                            if (!token || typeof token !== 'string') {
-                                throw new Error('Invalid reCAPTCHA token');
-                            }
 
-                            const tokenInput = document.getElementById('recaptcha-token');
-                            if (!tokenInput) {
-                                throw new Error('Missing hidden input with id="recaptcha-token"');
-                            }
-
-                            tokenInput.value = token;
-                        } catch (err) {
-                            console.error('Token processing error:', err);
-                        }
-                    })
-                    .catch(function (err) {
-                        console.error('reCAPTCHA execute error:', err);
-                    });
-            });
         });
 
 
         // for registering the input
-
         $('#register-form').on('submit', function (e) {
             e.preventDefault(); // Prevent default form submission
+            new Promise((resolve, reject) => {
+                grecaptcha.ready(function () {
+                    grecaptcha.execute('6LfXx2ArAAAAAFw9JczEdfdfaA-qd00V6_Nj7ZwJ', { action: 'register' })
+                        .then(function (token) {
+                            try {
+                                if (!token || typeof token !== 'string') {
+                                    throw new Error('Invalid reCAPTCHA token');
+                                }
+
+                                const tokenInput = document.getElementById('recaptcha-token');
+                                if (!tokenInput) {
+                                    throw new Error('Missing hidden input with id="recaptcha-token"');
+                                }
+
+                                tokenInput.value = token;
+                                resolve();
+                            } catch (err) {
+                                console.error('Token processing error:', err);
+                                reject();
+                            }
+                        })
+                        .catch(function (err) {
+                            console.error('reCAPTCHA execute error:', err);
+                            reject();
+                        });
+                });
+            });
+
             var formData = new FormData(this);
             fetch('api/store', {
                 method: 'POST',
                 body: formData
             }).then(async response => {
-                const result = await response.json() ;
+                const result = await response.json();
                 if (response.ok) {
-
+                    window.location.href = '/profile';
                 }
-                else if(response.status != 200){
+                else if (response.status != 200) {
                     let errors = result.error;
-                    // console.log(errors);
                     for (let field in errors) {
-                        // console.log(field);
                         let input = $(`[name="${field}"]`);
                         input.addClass('is-invalid');
                         input.after(`<div class="invalid-feedback">${errors[field][0]}</div>`);
                     }
 
-                 }
+                }
             }).catch(error => { alert(error); })
         });
 
