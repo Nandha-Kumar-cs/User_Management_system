@@ -47,7 +47,7 @@
                     grecaptcha.execute('6LfXx2ArAAAAAFw9JczEdfdfaA-qd00V6_Nj7ZwJ', { action: 'login' })
                         .then(function (token) {
                             $('#recaptcha-token').val(token);
-                            const formData = new FormData($('#login-form'));
+                            const formData = new FormData($('#login-form')[0]);
 
                             fetch('{{ url("api/login") }}', {
                                 method: 'POST',
@@ -60,7 +60,7 @@
                                 .then(response => response.json())
                                 .then(result => {
                                     if (result.token) {
-                                        localStorage.setItem('auth_token' , token)
+                                        localStorage.setItem('auth_token' , result.token)
                                         window.location.href = '/profile';
                                     } else {
                                         alert(result.error || 'Login failed.');
