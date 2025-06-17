@@ -7,7 +7,7 @@
 ![Alt text for image 2](readMe_images/register_page_with_error.PNG)
 
 ## pagination to display all the users 
-![pagination](readMe_images/all_users_withpagination.jpeg)
+![pagination](readMe_images/all_users_with_pagination.jpeg)
 
 ## Google Re-captcha
 ![Alt text for image 4](readMe_images/register_page_with_error.PNG)
