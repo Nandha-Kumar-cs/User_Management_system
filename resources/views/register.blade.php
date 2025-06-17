@@ -43,61 +43,45 @@
 @section('scripts')
     <script src="https://www.google.com/recaptcha/api.js?render=6LfXx2ArAAAAAFw9JczEdfdfaA-qd00V6_Nj7ZwJ"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        $(document).ready(function () {
+            $('#register-form').on('submit', function (e) {
+                e.preventDefault();
 
-        });
-
-
-        // for registering the input
-        $('#register-form').on('submit', function (e) {
-            e.preventDefault(); // Prevent default form submission
-            new Promise((resolve, reject) => {
                 grecaptcha.ready(function () {
                     grecaptcha.execute('6LfXx2ArAAAAAFw9JczEdfdfaA-qd00V6_Nj7ZwJ', { action: 'register' })
                         .then(function (token) {
-                            try {
-                                if (!token || typeof token !== 'string') {
-                                    throw new Error('Invalid reCAPTCHA token');
-                                }
-
-                                const tokenInput = document.getElementById('recaptcha-token');
-                                if (!tokenInput) {
-                                    throw new Error('Missing hidden input with id="recaptcha-token"');
-                                }
-                                tokenInput.value = token;
-                                
-                                resolve();
-                            } catch (err) {
-                                console.error('Token processing error:', err);
-                                reject();
-                            }
-                        })
-                        .catch(function (err) {
-                            console.error('reCAPTCHA execute error:', err);
-                            reject();
+                            $('#recaptcha-token').val(token);
+                            const formData = new FormData($('#register-form')[0]);
+                            fetch('{{ url("api/register") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                                },
+                                body: formData
+                            })
+                                .then(async response => {
+                                    const result = await response.json();
+                                    if (response.ok) {
+                                        localStorage.setItem('auth_token', result.token);
+                                        window.location.href = '/profile';
+                                    } else {
+                                        $('.is-invalid').removeClass('is-invalid');
+                                        $('.invalid-feedback').remove();
+                                        const errors = result.error || result.errors || {};
+                                        for (let field in errors) {
+                                            let input = $(`[name="${field}"]`);
+                                            input.addClass('is-invalid');
+                                            input.after(`<div class="invalid-feedback">${errors[field][0]}</div>`);
+                                        }
+                                    }
+                                })
+                                .catch(error => {
+                                    alert('Registration error. Please try again.');
+                                });
                         });
                 });
             });
-
-            var formData = new FormData(this);
-            fetch('api/register', {
-                method: 'POST',
-                body: formData
-            }).then(async response => {
-                const result = await response.json();
-                if (response.ok) {
-                    window.location.href = '/profile';
-                }
-                else if (response.status != 200) {
-                    let errors = result.error;
-                    for (let field in errors) {
-                        let input = $(`[name="${field}"]`);
-                        input.addClass('is-invalid');
-                        input.after(`<div class="invalid-feedback">${errors[field][0]}</div>`);
-                    }
-
-                }
-            }).catch(error => { alert(error); })
         });
 
     </script>

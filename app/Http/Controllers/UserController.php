@@ -25,7 +25,6 @@ class UserController extends Controller
         $googleResponseData = $googleResponse->json();
 
 
-
         if (!$googleResponseData['success'] || $googleResponseData['score'] < 0.5 || $googleResponseData['action'] != 'register')
         {
             return response()->json(['error' => 'reCAPTCHA verification failed.'], 422);
@@ -48,7 +47,7 @@ class UserController extends Controller
         $data = $request->all();
 
         $data['password'] = Hash::make($request->input('password'));
-
+        dd( $data['password'] );
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -112,6 +111,31 @@ class UserController extends Controller
             'user' => $user
         ]);
 
+    }
+
+
+    public function update(Request $request)
+    {
+      
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required|email'
+        ]);
+        if ($validator->fails())
+        {
+            return response()->json(['message' => $validator->errors()], 403);
+        }
+
+        $user = $request->user();
+
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email
+        ]);
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+        ],200);
     }
 
 

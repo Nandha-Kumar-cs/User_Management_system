@@ -12,3 +12,4 @@ Route::get('/register', function () {
 Route::view('/profile' , 'userProfile');
 Route::get('/adminData' , [Admin::class , 'getUsers'])->name('admin/userData');
 Route::view('/admin' ,'admin' );
+Route::view('/admin/users' , 'adminuserstable');

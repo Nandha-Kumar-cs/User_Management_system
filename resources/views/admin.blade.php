@@ -1,75 +1,74 @@
 @extends('layout')
-@section('title', 'Admin | Dashboard')
-@section('main_container')
-    <style>
-        body {
-            width: 100%;
-            overflow-x: hidden;
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <h3 class="text-center">User Data</h3>
-    <table id="users_table" class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>access</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-        <tfoot>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>access</th>
-            </tr>
-        </tfoot>
-    </table>
-@endsection
-@section('scripts')
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script>
-        $(function () {
-            $('#users_table').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: '{{ route('admin/userData')}}',
-                columns: [
-                    { data: 'id' },
-                    { data: 'name' },
-                    { data: 'email' },
-                    { data: 'access' }
-                ],
-                initComplete: function () {
-                    var api = this.api();
-                    api.columns().every(function (index) {
-                        var column = this;
-                        var title = $(column.footer()).text();
-                        var storageKey = "footerSearch_" + index;
 
-                        var input = $('<input type="text" placeholder="🔍 ' + title + '" />')
-                            .appendTo($(column.footer()).empty())
-                            .css({
-                                width: "90%",
-                                padding: "3px",
-                                "box-sizing": "border-box",
-                                "font-size": "13px"
-                            });
-                        var saved = localStorage.getItem(storageKey);
-                        if (saved) {
-                            input.val(saved);
-                            column.search(saved).draw();
-                        }
-                        input.on('keyup change clear', function () {
-                            var value = this.value;
-                            localStorage.setItem(storageKey, value);
-                            column.search(value).draw();
+@section('title', 'Login')
+
+@section('main_container')
+    <div class="login_container d-flex justify-content-center ">
+        <div class="card shadow p-4" style="width: 100%; max-width: 400px;">
+            <h3 class="text-center mb-3">Admin Login</h3>
+
+            <form id="admin-form">
+                @csrf
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email address</label>
+                    <input type="email" class="form-control" id="email" name="email" required />
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required />
+                </div>
+
+                <input type="hidden" name="recaptcha_token" id="recaptcha-token">
+
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
+
+            <p style="font-size: 12px;" class="text-muted text-center mt-3">
+                This site is protected by reCAPTCHA and the Google
+                <a href="https://policies.google.com/privacy" target="_blank">Privacy Policy</a> and
+                <a href="https://policies.google.com/terms" target="_blank">Terms of Service</a> apply.
+            </p>
+        </div>
+    </div>
+@endsection
+
+@section('scripts')
+    <script src="https://www.google.com/recaptcha/api.js?render=6LfXx2ArAAAAAFw9JczEdfdfaA-qd00V6_Nj7ZwJ"></script>
+    <script>
+        $(document).ready(function () {
+            $('#admin-form').on('submit', function (e) {
+                e.preventDefault();
+
+                grecaptcha.ready(function () {
+                    grecaptcha.execute('6LfXx2ArAAAAAFw9JczEdfdfaA-qd00V6_Nj7ZwJ', { action: 'adminlogin' })
+                        .then(function (token) {
+                            $('#recaptcha-token').val(token);
+                            const formData = new FormData($('#admin-form')[0]);
+
+                            fetch('{{ url("api/admin/login") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                                },
+                                body: formData
+                            })
+                                .then(response => response.json())
+                                .then(result => {
+                                    if (result.token) {
+                                        localStorage.setItem('admin_token' , result.token)
+                                        window.location.href = '/admin/users';
+                                    } else {
+                                        alert(result.error || 'Login failed.');
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error('Request failed:', err);
+                                    alert('Login error. Please try again.');
+                                });
                         });
-                    });
-                }
+                });
             });
         });
     </script>
