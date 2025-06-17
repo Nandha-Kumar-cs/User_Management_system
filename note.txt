@@ -1,1 +1,63 @@
-for pagination -> composer require yajra/laravel-datatables-oracle:"^10"
+project Name : User Management System
+Laravel Framework 9.52.20
+php : 8+
+Database : MySQL
+UI : Bootstrap 
+API : FetchAPI Js
+DataTable : yajra/laravel-datatables
+
+
+Deliverables :
+
+1.Implemented secure user authentication including registration, login, and logout functionalities using RESTful APIs, ensuring stateless interaction through Laravel Sanctum for token-based authentication.
+2.Integrated Google reCAPTCHA v3 into both login and registration processes to enhance security and prevent automated bot access, ensuring only legitimate user interactions are processed.
+3.Implemented user profile management, allowing authenticated users to securely view and update their own profile information via protected API routes using Laravel Sanctum.
+4.Developed a user-friendly Login and Registration interface using Bootstrap, fully integrated with Google reCAPTCHA v3 to enhance security and ensure a smooth user experience.
+5. Implemented efficient data handling in APIs by integrating Yajra DataTables for server-side pagination, search, and sorting, ensuring optimized query performance and scalability for large datasets.
+6. Enabled CSRF protection across the application to safeguard against cross-site request forgery attacks, ensuring secure form submissions and API interactions.
+7.Implemented login rate limiting to prevent brute-force attacks by restricting repeated login attempts, enhancing the overall security of the authentication system.
+8. Secured all sensitive API routes using Laravel middleware, including auth:sanctum and custom role-based middleware, to ensure that only authenticated and authorized users can access protected endpoints.
+
+Backlog :
+
+1.Role-based access control 
+2.Admin-only section to manage users (CRUD) 
+
+Reason For Backlog : 
+Due to time constraints arising from parallel commitments to ongoing office assignments and personal projects, I was unable to complete the remaining feature(s) within the given timeline.
+
+Dependencies Needed : 
+
+1.composer
+2.Sanctum and need to be published
+3.yajra/laravel-datatables-oracle:"^10" for pagination
+
+workflow of tokenbased authentication :
+
+Token-based authentication was implemented using Laravel Sanctum to secure API endpoints. 
+Upon successful login, a token is generated and returned to the client, where it is stored in the browser’s local storage. This token is then included in the Authorization header of subsequent requests to authenticate users. 
+Sanctum middleware was applied to protect routes such as user profile retrieval, updates, and logout. 
+
+Google Recaptcha : 
+To enhance security and prevent automated bot interactions, Google reCAPTCHA v3 was integrated into both the login and registration forms.
+On form submission, a reCAPTCHA token is generated client-side using the site key and sent along with the form data. 
+This token is then verified server-side before processing the request. This ensures that only legitimate human users can access authentication functionality
+
+
+Admin Functionalities – Backend Complete, UI Pending : 
+While the user interface for admin functionalities such as user registration, viewing specific user details, and deleting individual users was not implemented
+due to time constraints, the corresponding backend API routes have been fully developed and tested. Additionally, a dedicated SQL query file has been provided 
+to easily assign admin roles within the database, ensuring that administrative access is functional. 
+
+
+sql for admin : 
+INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`, `role`) VALUES
+(5738, 'admin', 'admin@gmail.com', NULL, '$2y$10$1ZgLAlTFONOvC4TQ19W95.bs6wXyjtjL5jugMJDQtgsUVfOEeYXny', NULL, NULL, NULL, 'admin');
+
+
+
+
+
+
+
+

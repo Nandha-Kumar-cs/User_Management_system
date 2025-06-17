@@ -47,7 +47,6 @@ class UserController extends Controller
         $data = $request->all();
 
         $data['password'] = Hash::make($request->input('password'));
-        dd( $data['password'] );
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
